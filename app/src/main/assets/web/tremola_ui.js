@@ -167,10 +167,8 @@ function menu_settings() {
 
 function new_ui_scheduling(){
     setScenario('scheduling');
-    backend('new_menu_scheduling hello!');
     defaultEventGUI();
     backend("loadAllEvents");
-    // Add this line in an appropriate location
 }
 
 function createNewEvent() {

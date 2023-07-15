@@ -57,7 +57,6 @@ function menu_new_scheduling() {
   // Display the scd-overlay
   document.getElementById('scd-overlay').style.display = 'initial';
   document.getElementById('overlay-bg').style.display = 'initial';
-
   overlayIsActive = true;
 }
 
@@ -695,25 +694,18 @@ function b2f_showSecret(json) {
 
 
 function sendEventToTestGUI(jsonLogEntry) {
-    console.log("Inside b2f_updateGUI function");
-    console.log(jsonLogEntry); // log the actual jsonLogEntry object
-
     const eventListContainer = document.getElementById('eventList');
-
     // Make sure the content of the value is an object
     if (typeof jsonLogEntry.value.content === "object") {
         const event = jsonLogEntry.value.content;
-
         const sepItem = document.createElement('sep');
         sepItem.innerHTML = `<hr style="height:2px;border:none;color:#333;background-color:#333;">`;
-
 
         const listItem = document.createElement('li');
         listItem.innerHTML = `Sender: ${event.author ? event.author : ''}, <br><br>
                               Event Name: ${event.name ? event.name : ''}, <br>
                               Date: ${event.date ? event.date : ''}, <br>
                               Time: ${event.time ? event.time : ''}`;
-
 
         // Add a click event listener to the list item
                 listItem.addEventListener('click', function() {

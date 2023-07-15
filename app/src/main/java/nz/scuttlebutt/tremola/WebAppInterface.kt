@@ -318,18 +318,9 @@ class WebAppInterface(private val act: Activity, val tremolaState: TremolaState,
 
 
     fun sendEventToTestGUI(jsonLogEntry: String?) {
-        //if (jsonLogEntry != null) {
         val cmd = "sendEventToTestGUI($jsonLogEntry);"
-        //Log.d("sendEventToUpdateGUI", "Sending command to update GUI: $cmd")
         eval(cmd)
-        //}
     }
-
-    fun sendlocalEventToGUI() {
-
-    }
-
-    //TODO Compare the eval here send the same that the RpcServices sends
 
     fun sendEventToFrontend(evnt: LogEntry) {
         // Log.d("MSG added", evnt.ref.toString())
