@@ -117,6 +117,157 @@ textarea {
     overflow-wrap: break-word;
 }
 
+/* Scheduling Overlay */
+#scd-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+}
+
+#scd-overlay.active {
+  display: block;
+}
+
+/* STYLE TABLE */
+#scd-overlay .overlay-content table {
+  width: %;
+}
+
+#scd-overlay .overlay-content table td {
+  padding: 15px;
+}
+
+#timeTable td.selected {
+  background-color: #87CEEB;  /* You can choose your own color */
+  color: #ffffff;
+}
+
+
+#scd-overlay .overlay-content table thead td {
+  background-color: #54585d;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 13px;
+  border: 1px solid #54585d;
+}
+
+#timeTable {
+  display: none;
+}
+
+
+#scd-overlay .overlay-content table tbody td {
+  color: #636363;
+  border: 1px solid #dddfe1;
+}
+
+#scd-overlay .overlay-content table tbody tr {
+  background-color: #f9fafb;
+}
+
+#scd-overlay .overlay-content table tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+
+#scd-overlay .overlay-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;      /* Set width to auto to adjust automatically */
+  max-width: 80%;   /* Set a maximum width if needed */
+  height: auto;     /* Set height to auto to adjust automatically */
+  max-height: 80%;  /* Limit the height to 80% */
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  overflow: auto;   /* Add a scrollbar if content overflows */
+}
+
+
+#scd-overlay .overlay-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  color: #888888;
+  cursor: pointer;
+}
+
+#scd-overlay .overlay-close:hover {
+  color: #555555;
+}
+
+/* Event Clicked Overlay */
+#event-clicked {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+}
+
+#event-clicked.active {
+  display: block;
+}
+
+#event-clicked .overlay-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;      /* Set width to auto to adjust automatically */
+  max-width: 80%;   /* Set a maximum width if needed */
+  height: auto;     /* Set height to auto to adjust automatically */
+  max-height: 80%;  /* Limit the height to 80% */
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  overflow: auto;   /* Add a scrollbar if content overflows */
+}
+
+#event-clicked .overlay-content h2 {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+}
+
+#event-clicked .overlay-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  color: #888888;
+  cursor: pointer;
+}
+
+#event-clicked .overlay-close:hover {
+  color: #555555;
+}
+
+
+#eventList {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--light);
+  border-radius: 4px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  overflow-y: auto;
+  width: 90%;
+}
+
 .overlay-bg {
     display: none;
     position: absolute;

@@ -46,6 +46,151 @@
         </div>
     </div>
 
+
+
+    <!-- Clicked Event Overlay -->
+    <style>
+      p {
+        text-align: center;
+      }
+    </style>
+    <div id="event-clicked" class="overlay">
+        <div class="overlay-content">
+            <!-- Overlay content goes here -->
+            <!-- Write the name of the event, choose date/time, and create event button -->
+            <!-- Textbox -->
+            <h1><p id="eventNameBox"></h1>
+            <h4><p>Description: </p></h4>
+            <h4><p id="descriptionBox"></h4>
+
+            <!-- Close button -->
+            <span class="overlay-close" onclick="closeOverlay()">&times;</span>
+        </div>
+    </div>
+
+    <!-- Scheduling Overlay -->
+    <style>
+      p {
+        text-align: center;
+      }
+    </style>
+    <div id="scd-overlay" class="overlay">
+        <div class="overlay-content">
+            <!-- Overlay content goes here -->
+            <!-- Write the name of the event, choose date/time, and create event button -->
+            <h2><p>Create new Event</p></h2>
+            <h4><p>Enter Event Name: </p></h4>
+            <p><input type="text" id="eventName" placeholder="My awesome Event..." style="height: 30px; width: 250px;"></p>
+
+            <h4><p>Choose a date </p></h4>
+            <p>
+                <select id="day">
+                    <!-- options will be filled with JavaScript -->
+                </select>
+
+                <select id="month">
+                    <!-- options will be filled with JavaScript -->
+                </select>
+
+                <select id="year">
+                    <!-- options will be filled with JavaScript -->
+                </select>
+            </p>
+            <h4><p>Choose a time </p></h4>
+            <p><button id="minimizeTable">Open Timetable</button></p>
+
+            <br>
+            <!-- Doodle-like interface for choosing date/time -->
+            <table id="timeTable" style="border-collapse: collapse; width: 40%; height: 169px; margin: auto;" border="1">
+                    <tbody>
+                    <tr style="height: 30px;">
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('00:00')">00:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('00:30')">00:30</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('01:00')">01:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('01:30')">01:30</td>
+                    </tr>
+                    <tr style="height: 30px;">
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('02:00')">02:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('02:30')">02:30</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('03:00')">03:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('03:30')">03:30</td>
+                    </tr>
+                    <tr style="height: 30px;">
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('04:00')">04:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('04:30')">04:30</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('05:00')">05:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('05:30')">05:30</td>
+                    </tr>
+                    <tr style="height: 30px;">
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('06:00')">06:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('06:30')">06:30</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('07:00')">07:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('07:30')">07:30</td>
+                    </tr>
+                    <tr style="height: 30px;">
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('08:00')">08:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('08:30')">08:30</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('09:00')">09:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('09:30')">09:30</td>
+                    </tr>
+                    <tr style="height: 30px;">
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('10:00')">10:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('10:30')">10:30</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('11:00')">11:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('11:30')">11:30</td>
+                    </tr>
+                    <tr style="height: 30px;">
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('12:00')">12:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('12:30')">12:30</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('13:00')">13:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('13:30')">13:30</td>
+                    </tr>
+                    <tr style="height: 30px;">
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('14:00')">14:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('14:30')">14:30</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('15:00')">15:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('15:30')">15:30</td>
+                    </tr>
+                    <tr style="height: 30px;">
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('16:00')">16:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('16:30')">16:30</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('17:00')">17:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('17:30')">17:30</td>
+                    </tr>
+                    <tr style="height: 30px;">
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('18:00')">18:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('18:30')">18:30</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('19:00')">19:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('19:30')">19:30</td>
+                    </tr>
+                    <tr style="height: 30px;">
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('20:00')">20:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('20:30')">20:30</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('21:00')">21:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('21:30')">21:30</td>
+                    </tr>
+                    <tr style="height: 30px;">
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('22:00')">22:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('22:30')">22:30</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('23:00')">23:00</td>
+                        <td style="width: 10%; height: 30px; text-align: center;" onclick="eventTime('23:30')">23:30</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+            <h4><p>Description: </p></h4>
+            <p><input type="text" id="description" placeholder=" " style="height: 30px; width: 250px;"></p>
+
+
+            <div id="errorMessage" style="color: red; display: none;"><p>Please fill out all fields correctly.</p></div>
+            <!-- Create event button -->
+            <p><button class=passive onclick="createNewEvent()" style="background-image: url('img/checked.svg'); margin-right: 5px; border: 0pt; height: 45px; width: 45px;"></button></p>
+
+            <!-- Close button -->
+            <span class="overlay-close" onclick="closeOverlay()">&times;</span>
+        </div>
+    </div>
+
     <div id='core' style="height: calc(100% - 118px); overflow: scroll; width: 100%;">
 
         <div id='lst:chats' class=w100 style='overflow: hidden'></div>
@@ -65,6 +210,8 @@
         </table>
 
         <div id='lst:contacts' class=w100 style="display: none;margin-top: 6px;"></div>
+
+        <div id="eventList" class="w100" style="display: none; margin-top: 6px; margin-left: 10px;"></div>
 
         <div id='the:connex' style="display: none; margin: 5pt;"></div>
 
@@ -284,18 +431,23 @@
 
         <table width=100% cellpadding="2pt">
             <tr>
-                <td width=35%>
+                <td width=25%>
                     <button id='btn:chats' class="w100 flat active buttontext" onclick="btnBridge(this);"
                             style="background-image: url('img/chat.svg');">&nbsp;
                         <!-- font size=+3>&#x1F4E8;</font><br><font size=small>Chats</font --></button>
-                <td width=35%>
+                <td width=25%>
                     <button id='btn:contacts' class="w100 flat passive buttontext" onclick="btnBridge(this);"
                             style="background-image: url('img/contacts.svg');">&nbsp;
                         <!-- font size=+3>&#x1F465;</font><br><font size=small>Contacts</font --></button>
-                <td width=35%>
+                <td width=25%>
                     <button id='btn:connex' class="w100 flat passive buttontext" onclick="btnBridge(this);"
                             style="background-image: url('img/signal.svg');">&nbsp;
                         <!-- font size=+3>&#x1F5E3;</font><br><font size=small>Connex</font --></button>
+                <td width=25%>
+                    <button id='btn:scheduling' class="w100 flat passive buttontext" onclick="new_ui_scheduling();"
+                            style="background-image: url('img/scheduling.svg');">&nbsp;
+                        <!-- font size=+3>&#x1F465;</font><br><font size=small>Contacts</font --></button>
+
         </table>
 
     </div>

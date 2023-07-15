@@ -53,6 +53,18 @@ function menu_new_contact() {
     overlayIsActive = true;
 }
 
+function menu_new_scheduling() {
+  // Display the scd-overlay
+  document.getElementById('scd-overlay').style.display = 'initial';
+  document.getElementById('overlay-bg').style.display = 'initial';
+
+  overlayIsActive = true;
+}
+
+function delete_all_Events() {
+  backend("deleteALlEvents")
+}
+
 function menu_new_pub() {
     menu_edit('new_pub_target', "Enter address of trustworthy pub<br><br>Format:<br><tt>net:IP_ADDR:PORT~shs:ID_OF_PUB</tt>", "");
 }
@@ -679,6 +691,132 @@ function b2f_new_contact(contact_str) { // '{"alias": "nickname", "id": "fid", '
 function b2f_showSecret(json) {
     setScenario(prev_scenario);
     generateQR(json)
+}
+
+
+function sendEventToTestGUI(jsonLogEntry) {
+    console.log("Inside b2f_updateGUI function");
+    console.log(jsonLogEntry); // log the actual jsonLogEntry object
+
+    const eventListContainer = document.getElementById('eventList');
+
+    // Make sure the content of the value is an object
+    if (typeof jsonLogEntry.value.content === "object") {
+        const event = jsonLogEntry.value.content;
+
+        const sepItem = document.createElement('sep');
+        sepItem.innerHTML = `<hr style="height:2px;border:none;color:#333;background-color:#333;">`;
+
+
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `Sender: ${event.author ? event.author : ''}, <br><br>
+                              Event Name: ${event.name ? event.name : ''}, <br>
+                              Date: ${event.date ? event.date : ''}, <br>
+                              Time: ${event.time ? event.time : ''}`;
+
+
+        // Add a click event listener to the list item
+                listItem.addEventListener('click', function() {
+                  handleItemClick(event); // Call the appropriate function when the item is clicked
+                });
+        // Append the new event to the existing list
+        eventListContainer.appendChild(sepItem);
+        eventListContainer.appendChild(listItem);
+    }
+}
+
+function sendLocalEventsToGUI(events) {
+  // Retrieve the event list container element
+  const eventListContainer = document.getElementById('eventList');
+
+  // Clear the existing event list if events array is empty
+  if (events.length === 0) {
+    eventListContainer.innerHTML = '';
+    defaultEventGUI();
+    return; // Exit the function early
+  }
+
+  // Iterate through the events and add them to the UI
+  for (const eventString of events) {
+    // Parse the event string into an object
+    const event = parseEventString(eventString);
+
+    const sepItem = document.createElement('sep');
+    sepItem.innerHTML = `<hr style="height:2px;border:none;color:#333;background-color:#333;">`;
+
+     // Check if the author is the same as the tremola ID
+     const isMe = myId === event.author + "=.ed25519";
+     const author = isMe ? 'me' : event.author;
+
+    // Create an <li> element to display the event details
+    const listItem = document.createElement('li');
+    listItem.innerHTML = `Sender: ${author}, <br><br>Event Name: ${event.name}, <br>Date: ${event.time}, <br>Time: ${event.date}`;
+
+    // Add a click event listener to the list item
+        listItem.addEventListener('click', function() {
+          handleItemClick(event); // Call the appropriate function when the item is clicked
+        });
+
+    eventListContainer.appendChild(sepItem);
+    eventListContainer.appendChild(listItem);
+  }
+}
+
+function handleItemClick(event) {
+  // Access the name of the clicked event
+  const eventName = event.name;
+
+  // Display the event-clicked overlay
+  document.getElementById('event-clicked').style.display = 'block';
+  document.getElementById('overlay-bg').style.display = 'block';
+
+  // Assign the event name to the eventNameBox element
+  document.getElementById('eventNameBox').textContent = event.name;
+  document.getElementById('descriptionBox').textContent = event.description;
+
+
+
+  overlayIsActive = true;
+}
+
+
+function parseEventString(eventString) {
+  const keyValuePairs = eventString.split(', '); // Split the event string into key-value pairs
+  const event = {};
+
+  // Parse each key-value pair and add them to the event object
+  for (const pair of keyValuePairs) {
+    const [key, value] = pair.split('='); // Split each pair into key and value
+    event[key] = value.trim(); // Trim any whitespace around the value
+  }
+
+  return event;
+}
+
+function defaultEventGUI() {
+  console.log("Inside defaultEventGUI function");
+
+  // Retrieve the event list container element
+  const eventListContainer = document.getElementById('eventList');
+
+  // Clear the existing event list
+  eventListContainer.innerHTML = '';
+
+  // Create a default event
+  const defaultEvent = {
+    name: "Default Event",
+    date: "20.01.2077",
+    time: "09:00",
+    // Add more properties based on your event structure
+  };
+
+  // Create a list item for the default event
+  const listItem = document.createElement('li');
+  listItem.innerHTML = `Event Name: ${defaultEvent.name}, <br>Date: ${defaultEvent.date}, <br>Time: ${defaultEvent.time}`;
+  eventListContainer.appendChild(listItem);
+
+  // Update the display property to make the event list visible
+  eventListContainer.style.display = 'block';
 }
 
 function b2f_initialize(id) {

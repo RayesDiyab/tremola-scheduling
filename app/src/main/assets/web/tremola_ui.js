@@ -6,7 +6,7 @@ let overlayIsActive = false;
 
 let display_or_not = [
     'div:qr', 'div:back',
-    'core', 'lst:chats', 'lst:posts', 'lst:contacts', 'lst:members', 'the:connex',
+    'core', 'lst:chats', 'lst:posts', 'lst:contacts', 'lst:members', 'the:connex', 'eventList',
     'div:footer', 'div:textarea', 'div:confirm-members', 'plus',
     'div:settings'
 ];
@@ -15,9 +15,9 @@ let prev_scenario = 'chats';
 let curr_scenario = 'chats';
 
 // Array of the scenarios that have a button in the footer
-const main_scenarios = ['chats', 'contacts', 'connex'];
+const main_scenarios = ['chats', 'contacts', 'connex', 'scheduling'];
 
-const buttonList = ['btn:chats', 'btn:posts', 'btn:contacts', 'btn:connex'];
+const buttonList = ['btn:chats', 'btn:posts', 'btn:contacts', 'btn:connex', 'btn:scheduling'];
 
 /**
  * The elements contained by each scenario.
@@ -29,6 +29,7 @@ let scenarioDisplay = {
     'contacts': ['div:qr', 'core', 'lst:contacts', 'div:footer', 'plus'],
     'posts': ['div:back', 'core', 'lst:posts', 'div:textarea'],
     'connex': ['div:qr', 'core', 'the:connex', 'div:footer', 'plus'],
+    'scheduling': ['div:qr', 'core', 'eventList', 'div:footer', 'plus'],
     'members': ['div:back', 'core', 'lst:members', 'div:confirm-members'],
     'settings': ['div:back', 'div:settings']
 }
@@ -44,6 +45,10 @@ let scenarioMenu = {
         ['Redeem invite code', 'menu_invite'],
         ['Settings', 'menu_settings'],
         ['About', 'menu_about']],
+    'scheduling': [['New Event', 'menu_new_scheduling'],
+            ['Delete All (locally)', 'delete_all_Events'],
+            ['Settings', 'menu_settings'],
+            ['About', 'menu_about']],
     'posts': [['Rename', 'menu_edit_convname'],
         ['(un)Forget', 'menu_forget_conv'],
         ['Settings', 'menu_settings'],
@@ -89,14 +94,16 @@ function setScenario(new_scenario) {
         // Cycle throw the list of elements and check against the list in
         // scenarioDisplay to display it or not
         display_or_not.forEach(function (gui_element) {
-            // console.log(' l+' + gui_element);
-            if (list_of_elements.indexOf(gui_element) < 0) {
-                document.getElementById(gui_element).style.display = 'none';
-            } else {
-                document.getElementById(gui_element).style.display = null;
-                // console.log(' l=' + gui_element);
+            var element = document.getElementById(gui_element);
+            if (element) {
+                if (list_of_elements.indexOf(gui_element) < 0) {
+                    element.style.display = 'none';
+                } else {
+                    element.style.display = null;
+                }
             }
-        })
+        });
+
         // Display the red TREMOLA title or another one
         if (new_scenario === "posts" || new_scenario === "settings") {
             document.getElementById('tremolaTitle').style.display = 'none';
@@ -116,6 +123,7 @@ function setScenario(new_scenario) {
         }
     }
 }
+
 
 function btnBridge(element) {
     element = element.id;
@@ -157,7 +165,60 @@ function menu_settings() {
     c.innerHTML = "<div style='text-align: center;'><font size=+1><strong>Settings</strong></font></div>";
 }
 
+function new_ui_scheduling(){
+    setScenario('scheduling');
+    backend('new_menu_scheduling hello!');
+    defaultEventGUI();
+    backend("loadAllEvents");
+    // Add this line in an appropriate location
+}
+
+function createNewEvent() {
+  // validate the form
+  if (!validateForm()) {
+    return; // stop here if the form is invalid
+  }
+
+  var eventNameInput = document.getElementById("eventName");
+  var eventName = eventNameInput.value.replace(/\s+/g, "*_"); // Replace spaces with underscores (_)
+
+  console.log(eventName);
+
+  const selectedTime = document.querySelector('#timeTable td.selected');
+  if (selectedTime) {
+    console.log(`The selected time is ${selectedTime.innerText}`);
+    selectedTime.classList.remove('selected'); // Deselect the time
+  }
+
+  // Get current date
+  var currentDate = new Date();
+  var day = currentDate.getDate();
+  var month = currentDate.toLocaleString('default', { month: 'long' }); // Get the full month name as a string
+  var year = currentDate.getFullYear();
+  var date = day + "." + month + "." + year;
+
+  // Get description
+  var descriptionInput = document.getElementById("description");
+  var description = descriptionInput.value.replace(/\s+/g, "*_"); // Replace spaces with underscores (_)
+
+  backend("add:event " + eventName + " " + selectedTime.innerText + " " + date + " " + description);
+
+  console.log(`The selected date is ${day}-${month}-${year}`);
+
+  eventNameInput.value = ''; // Clear the input field
+
+  // Clear selected date
+  document.getElementById('day').value = day;
+  document.getElementById('month').value = month;
+  document.getElementById('year').value = year;
+
+  closeOverlay();
+}
+
 function closeOverlay() {
+    document.getElementById('event-clicked').style.display = 'none';
+    document.getElementById('scd-overlay').style.display = 'none';
+    document.getElementById('overlay-bg').style.display = 'none';
     document.getElementById('menu').style.display = 'none';
     document.getElementById('qr-overlay').style.display = 'none';
     document.getElementById('preview-overlay').style.display = 'none';
@@ -204,6 +265,8 @@ function plus_button() {
         menu_new_contact();
     } else if (curr_scenario === 'connex') {
         menu_new_pub();
+    } else if (curr_scenario === 'scheduling') {
+        menu_new_scheduling();
     }
 }
 
@@ -318,5 +381,114 @@ function look_up(shortname) {
         launch_snackbar(`"${shortname}" is not a valid Shortname`)
     }
 }
+
+function eventTime(time) {
+  // Deselect any previously selected time
+  const selectedTime = document.querySelector('#timeTable td.selected');
+  if (selectedTime) {
+    selectedTime.classList.remove('selected');
+  }
+
+  // Select the clicked time
+  const timeCells = document.querySelectorAll('#timeTable td');
+  timeCells.forEach(function(timeCell) {
+    if (timeCell.innerText === time) {
+      timeCell.classList.add('selected');
+    }
+  });
+}
+
+function fillDateOptions() {
+    // Get today's date
+    var today = new Date();
+
+    // Get the date dropdowns
+    var dayDropdown = document.getElementById('day');
+    var monthDropdown = document.getElementById('month');
+    var yearDropdown = document.getElementById('year');
+
+    // Clear current options
+    dayDropdown.innerHTML = '';
+    monthDropdown.innerHTML = '';
+    yearDropdown.innerHTML = '';
+
+    // Define months
+    var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+    // Fill the day dropdown
+    for (var i = 1; i <= 31; i++) {
+        var option = document.createElement('option');
+        option.text = i;
+        dayDropdown.add(option);
+    }
+
+    // Fill the month dropdown
+    for (var i = 0; i < 12; i++) {
+        var option = document.createElement('option');
+        option.text = months[i];
+        monthDropdown.add(option);
+    }
+
+    // Fill the year dropdown
+    for (var i = today.getFullYear(); i <= today.getFullYear() + 100; i++) {
+        var option = document.createElement('option');
+        option.text = i;
+        yearDropdown.add(option);
+    }
+
+    // Set the default day, month and year to today's date
+    dayDropdown.value = today.getDate();  // Note: getDate() returns the day of the month
+    monthDropdown.value = months[today.getMonth()];  // Note: getMonth() returns the month index starting at 0
+    yearDropdown.value = today.getFullYear();
+}
+
+function validateForm() {
+  var eventNameInput = document.getElementById("eventName");
+  const selectedTime = document.querySelector('#timeTable td.selected');
+  var daySelect = document.getElementById("day");
+  var monthSelect = document.getElementById("month");
+  var yearSelect = document.getElementById("year");
+
+  // Mandatory: Get the description input
+  var descriptionInput = document.getElementById("description");
+
+  // validate the inputs
+  if (
+    !eventNameInput.value.trim() ||
+    !selectedTime ||
+    !daySelect.value ||
+    !monthSelect.value ||
+    !yearSelect.value ||
+    !descriptionInput.value.trim()
+  ) {
+    // if any required field is empty or the time is not selected, or the description is empty, show the error message
+    document.getElementById("errorMessage").style.display = "block";
+    return false;
+  }
+
+  // if all fields are valid, hide the error message and return true
+  document.getElementById("errorMessage").style.display = "none";
+  return true;
+}
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    var btn = document.getElementById("minimizeTable");
+    var table = document.getElementById("timeTable");
+
+    btn.addEventListener("click", function() {
+        if(table.style.display !== "table") {
+            table.style.display = "table"; // This makes the table visible
+            btn.textContent = "Close Timetable";
+        } else {
+            table.style.display = "none";
+            btn.textContent = "Open Timetable";
+        }
+    });
+    fillDateOptions();
+});
+
+// Retrieve the event list container element
+const eventListContainer = document.getElementById('eventList');
 
 // ---

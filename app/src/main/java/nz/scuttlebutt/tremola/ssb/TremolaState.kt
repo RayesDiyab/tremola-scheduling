@@ -6,9 +6,11 @@ import nz.scuttlebutt.tremola.WebAppInterface
 import nz.scuttlebutt.tremola.ssb.core.IdStore
 import nz.scuttlebutt.tremola.ssb.db.TremolaDatabase
 import nz.scuttlebutt.tremola.ssb.db.daos.ContactDAO
+import nz.scuttlebutt.tremola.ssb.db.daos.EventDAO
 import nz.scuttlebutt.tremola.ssb.db.daos.LogEntryDAO
 import nz.scuttlebutt.tremola.ssb.db.daos.PubDAO
 import nz.scuttlebutt.tremola.ssb.db.entities.Contact
+import nz.scuttlebutt.tremola.ssb.db.entities.Event
 import nz.scuttlebutt.tremola.ssb.db.entities.LogEntry
 import nz.scuttlebutt.tremola.ssb.db.entities.Pub
 import nz.scuttlebutt.tremola.ssb.peering.PeeringPool
@@ -29,6 +31,7 @@ class TremolaState(val context: Context) {
 
     // Load database
     private val db = TremolaDatabase.getInstance(context)
+    val eventDAO: EventDAO = db.eventDAO()
     val logDAO: LogEntryDAO = db.logDAO()
     val pubDAO: PubDAO = db.pubDAO()
     val contactDAO: ContactDAO = db.contactDAO()
@@ -104,6 +107,16 @@ class TremolaState(val context: Context) {
             Contact(fid, alias, false, null, 1, 0, null)
         )
     }
+
+    fun addEvent(name: String, date: String, time: String, author: String, description: String) {
+        executorPool.submit {
+            eventDAO.insert(
+                Event(0, name, date, time, author, description)
+                // You might want to handle the ID differently. This is just an example.
+            )
+        }
+    }
+
 
     private fun addOwnIdentityAsFeed() {
         executorPool.submit {

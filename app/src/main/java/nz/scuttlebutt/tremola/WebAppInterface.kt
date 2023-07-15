@@ -10,6 +10,7 @@ import android.webkit.WebView
 import android.widget.Toast
 import com.google.zxing.integration.android.IntentIntegrator
 import nz.scuttlebutt.tremola.ssb.TremolaState
+import nz.scuttlebutt.tremola.ssb.db.entities.Event
 import nz.scuttlebutt.tremola.ssb.db.entities.LogEntry
 import nz.scuttlebutt.tremola.ssb.db.entities.Pub
 import nz.scuttlebutt.tremola.ssb.peering.RpcInitiator
@@ -19,6 +20,10 @@ import nz.scuttlebutt.tremola.utils.getBroadcastAddress
 import org.json.JSONObject
 import java.io.IOException
 import java.util.concurrent.Executors
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import org.json.JSONArray
+import java.lang.reflect.Type
 
 
 // pt 3 in https://betterprogramming.pub/5-android-webview-secrets-you-probably-didnt-know-b23f8a8b5a0c
@@ -111,6 +116,79 @@ class WebAppInterface(private val act: Activity, val tremolaState: TremolaState,
                     tremolaState.peers.newContact(args[1]) // inform online peers via EBT
                 }
                 return
+            }
+            "add:event" -> { // Add a new event
+                // Create a new event with the provided details
+                val updatedName = args[1].replace("*_", " ")
+                val updatedDesc = args[4].replace("*_", " ")
+                val author = tremolaState.idStore.identity.toRef() // Retrieve the author from TremolaState
+                tremolaState.addEvent(updatedName, args[2], args[3], author, updatedDesc) // Pass the author to the addEvent method
+
+                // Create a SSB message for the event
+                val rawStr = tremolaState.msgTypes.mkEvent(updatedName, args[2], args[3], author, updatedDesc)
+
+                // Convert the message to a LogEntry and broadcast it
+                val evnt = tremolaState.msgTypes.jsonToLogEntry(rawStr, rawStr.encodeToByteArray())
+
+                val localRawStr = tremolaState.msgTypes.mkEvent(updatedName, args[2], args[3], "Me", updatedDesc)
+                Log.d("handleNewLogEntry", "localRawStr: $localRawStr")
+                // Convert the message to a LogEntry and broadcast it
+                val localEvnt = tremolaState.msgTypes.jsonToLogEntry(localRawStr, localRawStr.encodeToByteArray())
+                Log.d("handleNewLogEntry", "Length of localEvnt.pub: ${localEvnt?.pub?.length}")
+                // Ensure the log entry isn't null
+                if (localEvnt != null) {
+                    // Check if the log entry is an event
+
+                    val jsonObject = JSONObject(localEvnt.pub)
+                    if (jsonObject.getString("type") == "event") {
+                        // Convert the LogEntry back to JSON
+                        val jsonLogEntry = tremolaState.msgTypes.logEntryToJson(localEvnt)
+                        // Check if the conversion was successful
+                        if (jsonLogEntry != null) {
+                            // Send the JSON string to the b2f_updateGUI function in tremola.js
+                            sendEventToTestGUI(jsonLogEntry)
+                        } else {
+                            Log.d("handleNewLogEntry", "Failed to convert LogEntry to JSON")
+                        }
+                    }
+                }
+
+                evnt?.let {
+                    rx_event(it) // Persist the event, propagate horizontally and also up
+                    Log.i("Add Event", "Sent event to peers")
+                }
+                return
+            }
+            "loadAllEvents" -> {
+                val events = tremolaState.eventDAO.getAll() // Get all events from the database
+
+                for (event in events) {
+                    Log.d("Event", event.toString()) // Print the event
+                }
+
+                val jsonEvents = JSONArray()
+                for (event in events) {
+                    jsonEvents.put(event.toString()) // Convert event to JSON string and add it to the array
+                }
+
+                val cmd = "sendLocalEventsToGUI(${jsonEvents.toString()});"
+                eval(cmd)
+            }
+            "deleteALlEvents" -> {
+                tremolaState.eventDAO.deleteAll()
+                val events = tremolaState.eventDAO.getAll() // Get all events from the database
+
+                for (event in events) {
+                    Log.d("Event", event.toString()) // Print the event
+                }
+
+                val jsonEvents = JSONArray()
+                for (event in events) {
+                    jsonEvents.put(event.toString()) // Convert event to JSON string and add it to the array
+                }
+
+                val cmd = "sendLocalEventsToGUI(${jsonEvents.toString()});"
+                eval(cmd)
             }
             "priv:post" -> { // Post a private chat
                 // atob(text) recipient1 recipient2 ...
@@ -234,8 +312,24 @@ class WebAppInterface(private val act: Activity, val tremolaState: TremolaState,
         // when we come here we assume that the event is legit (chaining and signature)
         tremolaState.addLogEntry(entry)       // persist the log entry
         sendEventToFrontend(entry)            // notify the local app
+
         tremolaState.peers.newLogEntry(entry) // stream it to peers we are currently connected to
     }
+
+
+    fun sendEventToTestGUI(jsonLogEntry: String?) {
+        //if (jsonLogEntry != null) {
+        val cmd = "sendEventToTestGUI($jsonLogEntry);"
+        //Log.d("sendEventToUpdateGUI", "Sending command to update GUI: $cmd")
+        eval(cmd)
+        //}
+    }
+
+    fun sendlocalEventToGUI() {
+
+    }
+
+    //TODO Compare the eval here send the same that the RpcServices sends
 
     fun sendEventToFrontend(evnt: LogEntry) {
         // Log.d("MSG added", evnt.ref.toString())

@@ -10,21 +10,23 @@ import nz.scuttlebutt.tremola.utils.SingletonHolder
 
 @Database(
     entities = [Contact::class, LogEntry::class, Pub::class,
-                Blob::class, Follow::class],
-    version = 15
+                Blob::class, Follow::class, Event::class],
+    version = 19
 )
 
 abstract class TremolaDatabase : RoomDatabase(){
     abstract fun contactDAO(): ContactDAO
     abstract fun logDAO() :    LogEntryDAO
     abstract fun pubDAO() :    PubDAO
+    abstract fun eventDAO():   EventDAO
     // not used for now:
     abstract fun blobDAO():    Notused_BlobDAO
     abstract fun followDAO() : Notused_FollowDAO
 
-    companion object: SingletonHolder<TremolaDatabase, Context>({
+
+    companion object : SingletonHolder<TremolaDatabase, Context>({
         Room.databaseBuilder(it, TremolaDatabase::class.java, "surfcity_db")
-            .addCallback(object: RoomDatabase.Callback(){})
+            .addCallback(object : RoomDatabase.Callback() {})
             .fallbackToDestructiveMigration()
             .build()
     })

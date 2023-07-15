@@ -9,14 +9,15 @@ plugins {
 // apply plugin: "kotlin-kapt"
 
 android {
+    compileSdk 33
+
     /*
     signingConfigs {
         release {
         }
     }
     */
-    compileSdkVersion 30
-    buildToolsVersion "30.0.3"
+    buildToolsVersion '33.0.2'
 
     defaultConfig {
         applicationId "nz.scuttlebutt.tremola"
@@ -56,6 +57,7 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    namespace 'nz.scuttlebutt.tremola'
 
     /*
     packagingOptions {
@@ -88,6 +90,7 @@ dependencies {
 
     implementation 'com.journeyapps:zxing-android-embedded:4.2.0'
     implementation 'com.google.zxing:core:3.4.1'
+    implementation 'com.google.code.gson:gson:2.10.1'
 
     //LAZY SODIUM
     implementation 'com.goterl:lazysodium-android:5.0.2@aar'

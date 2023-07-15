@@ -4,6 +4,7 @@ import android.util.Base64
 import android.util.Log
 import nz.scuttlebutt.tremola.ssb.core.Crypto
 import nz.scuttlebutt.tremola.ssb.core.Crypto.Companion.sha256
+import nz.scuttlebutt.tremola.ssb.db.entities.Event
 import nz.scuttlebutt.tremola.ssb.db.entities.LogEntry
 import nz.scuttlebutt.tremola.utils.HelperFunctions.Companion.deRef
 import nz.scuttlebutt.tremola.utils.HelperFunctions.Companion.toBase64
@@ -21,6 +22,21 @@ class SSBmsgTypes(val tremolaState: TremolaState) {
             return id.signSSBEvent(null, 1, ctxt)
         return id.signSSBEvent(prev.hid, prev.lsq + 1, ctxt)
     }
+
+    fun mkEvent(name: String, time: String, date: String, author: String, description: String): String {
+        // Create an event JSONObject
+        val event = JSONObject()
+        event.put("type", "event")
+        event.put("author", author)
+        event.put("name", name)
+        event.put("date", date)
+        event.put("time", time)
+        event.put("description", description)
+
+        // Return the signed SSB event
+        return mkWire(event)
+    }
+
 
     fun mkPost(text: String, toWhom: List<String>): String {
         val recps = JSONArray()
@@ -52,7 +68,7 @@ class SSBmsgTypes(val tremolaState: TremolaState) {
     }
 
     fun jsonToLogEntry(json: String, raw: ByteArray): LogEntry? {
-        // converts log entry in JSON, with or without envelope, to internal data structure
+        // Converts log entry in JSON, with or without envelope, to internal data structure
         // but only if the signature is valid
         try {
             var value = json
@@ -63,7 +79,6 @@ class SSBmsgTypes(val tremolaState: TremolaState) {
                 value = eTree.getString("value")
                 vTree = eTree.getJSONObject("value")
             }
-            // Log.d("Value", value)
             if (!vTree.has("author")) { // not a message
                 Log.d("parse", "no author?")
                 return null
@@ -82,28 +97,32 @@ class SSBmsgTypes(val tremolaState: TremolaState) {
             val sig = Base64.decode(signature, Base64.NO_WRAP)
 
             val msg2 = msg.slice(0..msg.indexOf(",\n  \"signature\":", msg.length - 130) - 1) + "\n}"
-            // Log.d("FORMATTED2", msg2)
             if (!Crypto.verifySignDetached(sig, msg2.encodeToByteArray(), author.deRef())) {
                 Log.d("SIGNATURE2", "**invalid** for ${author}/${seq}")
                 return null
             }
-            // Log.d("SIGNATURE2", "valid for ${author}/${seq}")
 
-            // if has timestamp: we could compare it, move internal tst backwards if in the future
-            // val tst = historyEvent.getAsJsonObject("timestamp").asString
-            var public: String? = null
-            var confid: String?
+            var content: JSONObject? = null
             try {
-                confid = vTree.getString("content")
-                confid = id.decryptPrivateMessage(confid!!)?.decodeToString()
+                val contentStr = vTree.getString("content")
+                val decryptedContentStr = id.decryptPrivateMessage(contentStr)
+                if (decryptedContentStr != null) {
+                    content = JSONObject(String(decryptedContentStr))
+                }
             } catch (ex: Exception) {
-                public = vTree.getJSONObject("content").toString()
+                content = vTree.getJSONObject("content")
+            }
+
+            var public: String? = null
+            var confid: String? = null
+            if (content != null) {
+                public = content.toString()
                 confid = null
             }
             return LogEntry(
                 key, author,
                 seq, pre, vTree.getLong("timestamp"),
-                null, null,
+                null, null,  // cid and clt
                 public, confid, raw
             )
 
@@ -113,4 +132,39 @@ class SSBmsgTypes(val tremolaState: TremolaState) {
         }
     }
 
+    fun logEntryToJson(logEntry: LogEntry): String? {
+        try {
+            val vTree = JSONObject()
+
+            vTree.put("author", logEntry.lid)
+            vTree.put("sequence", logEntry.lsq)
+            vTree.put("previous", logEntry.pre ?: JSONObject.NULL)
+            // Assuming signature is present in the raw field
+            vTree.put("signature", String(logEntry.raw) + ".sig.ed25519")
+            vTree.put("timestamp", logEntry.tst)
+
+            var content: JSONObject? = null
+            if (logEntry.pub != null) {
+                content = JSONObject(logEntry.pub)
+            }
+            // Assuming private content should be included when public content is not present
+            else if (logEntry.pri != null) {
+                content = JSONObject(logEntry.pri)
+            }
+
+            vTree.put("content", content ?: JSONObject.NULL)
+
+            val eTree = JSONObject()
+            eTree.put("key", logEntry.hid)
+            eTree.put("value", vTree)
+
+            val json = eTree.toString()
+            val msg = Json_PP().makePretty(json)
+
+            return msg
+        } catch (e: Exception) {
+            Log.d("LOGENTRY NOT CONVERTED", e.toString() + " / " + logEntry.toString())
+            return null
+        }
+    }
 }

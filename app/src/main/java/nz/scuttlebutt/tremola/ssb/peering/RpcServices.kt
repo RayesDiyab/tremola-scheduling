@@ -172,11 +172,27 @@ class RpcServices(val tremolaState: TremolaState) {
         // update knownFrontier for peer we receive this note from
         tremolaState.peers.updateKnownFrontier(rpcLoop?.peerFid!!, evnt.lid, evnt.lsq)
 
-        // only pass on to application layer if new?
+        // Check if the log entry is an event
+        val jsonObject = JSONObject(evnt.pub)
+        if (jsonObject.getString("type") == "event") {
+            // Convert the LogEntry back to JSON
+            val jsonLogEntry = tremolaState.msgTypes.logEntryToJson(evnt)
+
+            // Check if the conversion was successful
+            if (jsonLogEntry != null) {
+                // Send the JSON string to the b2f_updateGUI function in tremola.js
+                tremolaState.wai.eval("sendEventToTestGUI('$jsonLogEntry')")
+            } else {
+                Log.d("handleNewLogEntry", "Failed to convert LogEntry to JSON")
+            }
+        }
+
+        // Only pass on to application layer if new?
         // if (evnt.pri == null) return // only interested in private chat msgs ?
         // logDAO.add(evnt) is done in the rx_event() function
         tremolaState.wai.rx_event(evnt)
     }
+
 
     fun handleEBTmsg(rpcNr: Int, bodyString: String, rawEvent: ByteArray) {
         Log.d("incoming EBTmsg", bodyString)
